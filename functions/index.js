@@ -1,20 +1,63 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
-const { onRequest } = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+const db = admin.firestore();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
 
-exports.helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
+exports.addInventory = functions.https.onRequest((req, res) => {
+
+  const inventory = req.body;
+  db.collection("inventory")
+    .add(inventory)
+    .then((ref) => {
+      res.send(ref.id);
+    });
 });
 
+exports.getInventory = functions.https.onRequest((req, res) => {
+    db.collection("inventory")
+        .get()
+        .then((snapshot) => {
+        let inventory = [];
+        snapshot.forEach((doc) => {
+            inventory.push({ id: doc.id, ...doc.data() });
+        });
+        res.send(inventory);
+        });
+});
+    
+exports.updateInventory = functions.https.onRequest((req, res) => {
+    const id = req.query.id;
+    const
+        inventory = req.body;
+    db.collection("inventory")
+        .doc(id)
+        .update(inventory)
+        .then(() => {
+        res.send("Inventory updated");
+        });
+}
+);
+
+exports.deleteInventory = functions.https.onRequest((req, res) => {
+    const id = req.query.id;
+    db.collection("inventory")
+        .doc(id)
+        .delete()
+        .then(() => {
+        res.send("Inventory deleted");
+        });
+}
+);
+
+exports.getInventoryById = functions.https.onRequest((req, res) => {
+    const id = req.query.id;
+    db.collection("inventory")
+        .doc(id)
+        .get()
+        .then((doc) => {
+        res.send(doc.data());
+        });
+}
+);
