@@ -11,6 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 const admin = require("firebase-admin");
 const serviceAccount = require("./tanui-api-key.json");
 
+// use connection details from the service account key to connect to the firebase database
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
